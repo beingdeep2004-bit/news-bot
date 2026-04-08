@@ -20,16 +20,34 @@ from apscheduler.triggers.cron import CronTrigger
 from telegram import Update, Chat
 from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram.constants import ParseMode, ChatAction
-from anthropic import Anthropic
+from groq import Groq
+import httpx
 
 # ==================== CONFIG ====================
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID_HERE")
 NEWSDATA_KEY = os.getenv("NEWSDATA_KEY", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
-# Initialize Claude client
-claude_client = Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+# Initialize Groq client with custom httpx configuration
+groq_client = None
+
+def get_groq_client():
+    """Initialize Groq client with proper httpx configuration"""
+    global groq_client
+    if groq_client is None and GROQ_API_KEY:
+        try:
+            # Create custom httpx client without problematic proxy settings
+            http_client = httpx.Client(
+                timeout=30.0,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
+            groq_client = Groq(api_key=GROQ_API_KEY, http_client=http_client)
+            logger.info("✅ Groq client initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq client: {e}")
+            return None
+    return groq_client
 
 # Logging setup
 logging.basicConfig(
@@ -92,23 +110,23 @@ def escape_markdown(text: str) -> str:
         text = text.replace(char, f'\\{char}')
     return text
 
-async def ask_claude(category: str, articles: List[Dict]) -> Optional[str]:
+async def ask_claude(category: str, articles: List[Dict]) -> Optional[Dict]:
     """
-    Send articles to Claude for intelligent curation and summarization
-    Returns formatted message with high-impact stories, summaries, and insights
+    Send articles to Groq for intelligent curation and summarization
+    Returns JSON with high-impact stories, summaries, and insights
     """
-    if not claude_client:
-        logger.warning("Claude client not initialized - set ANTHROPIC_API_KEY")
+    if not GROQ_API_KEY:
+        logger.warning("Groq API key not configured - set GROQ_API_KEY")
         return None
 
     try:
-        # Format articles for Claude
+        # Format articles for Groq
         articles_text = "\n".join([
             f"- Title: {a.get('title', 'N/A')}\n"
             f"  Source: {a.get('source', 'N/A')}\n"
             f"  Link: {a.get('link', 'N/A')}\n"
             f"  Published: {a.get('published', 'N/A')}"
-            for a in articles[:15]  # Send top 15 articles to Claude
+            for a in articles[:15]  # Send top 15 articles to Groq
         ])
 
         prompt = f"""You are a financial news curator. Analyze these {category} news articles and:
@@ -139,15 +157,23 @@ ARTICLES TO CURATE:
 
 Return ONLY the JSON, no additional text."""
 
-        message = claude_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+        # Get Groq client
+        client = get_groq_client()
+        if not client:
+            logger.error("Groq client failed to initialize")
+            return None
+
+        # Call Groq API
+        message = client.chat.completions.create(
+            model="mixtral-8x7b-32768",
             max_tokens=1000,
             messages=[
                 {"role": "user", "content": prompt}
             ]
         )
 
-        response_text = message.content[0].text
+        # Parse Groq response (different format than Claude)
+        response_text = message.choices[0].message.content
 
         # Try to parse JSON response
         try:
@@ -159,12 +185,12 @@ Return ONLY the JSON, no additional text."""
                 data = json.loads(json_str)
                 return data
         except json.JSONDecodeError:
-            logger.warning("Failed to parse Claude's JSON response")
+            logger.warning("Failed to parse Groq's JSON response")
             return None
 
         return None
     except Exception as e:
-        logger.error(f"Claude API error: {e}")
+        logger.error(f"Groq API error: {e}")
         return None
 
 def format_curated_news(curated_data: Optional[Dict], category: str = "Global") -> str:
@@ -462,7 +488,7 @@ def fetch_india_news() -> str:
 # ==================== DIGEST MESSAGES ====================
 
 async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """8 AM IST - Crypto + Markets + Claude-curated Top News"""
+    """8 AM IST - Crypto + Markets + Groq-curated Top News"""
     try:
         message = f"🌅 *GOOD MORNING!* ({datetime.now(IST).strftime('%I:%M %p IST')})\n"
         message += "=" * 60 + "\n\n"
@@ -474,8 +500,8 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         message += f"{crypto}\n\n{stocks}\n\n{fear_greed}\n\n"
 
-        # Add curated news if Claude available
-        if claude_client:
+        # Add curated news if Groq available
+        if GROQ_API_KEY:
             try:
                 articles = await fetch_all_rss(max_per_source=4)
                 if articles:
@@ -488,7 +514,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
                             message += f"📌 {story.get('summary', 'N/A')}\n"
                             message += f"💡 Why it matters: {story.get('why_it_matters', 'N/A')}\n"
             except Exception as e:
-                logger.warning(f"Claude integration in morning digest failed: {e}")
+                logger.warning(f"Groq integration in morning digest failed: {e}")
                 message += fetch_rss_plain()
         else:
             message += fetch_rss_plain()
@@ -537,13 +563,14 @@ async def evening_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         stocks = fetch_stock_prices()
         fear_greed = fetch_fear_greed()
-        news = fetch_rss()
+        news = fetch_rss_plain()
 
         message += f"{stocks}\n\n{fear_greed}\n\n{news}"
 
         await context.bot.send_message(
             chat_id=CHAT_ID,
-            text=message
+            text=message,
+            parse_mode=ParseMode.MARKDOWN_V2
         )
         logger.info("Evening digest sent successfully")
     except Exception as e:
@@ -587,7 +614,7 @@ Data updates automatically at 8 AM, 1 PM, 7 PM IST"""
 
 
 async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /news command - Claude-curated global news"""
+    """Handle /news command - Groq-curated global news"""
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
 
@@ -598,15 +625,15 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text("No recent articles found. Try again in a moment.")
             return
 
-        # Try Claude curation first
-        if claude_client:
+        # Try Groq curation first
+        if GROQ_API_KEY:
             curated = await ask_claude("Global Business & Markets", articles)
             if curated:
                 message = format_curated_news(curated, "Global Business & Markets")
                 await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
                 return
 
-        # Fallback to plain RSS if Claude fails
+        # Fallback to plain RSS if Groq fails
         message = fetch_rss_plain()
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
@@ -648,7 +675,7 @@ async def stocks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /india command - India-focused news with Claude curation"""
+    """Handle /india command - India-focused news with Groq curation"""
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
 
@@ -659,7 +686,7 @@ async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
 
         # Fallback to filtering RSS feeds for India-focused content
-        if claude_client:
+        if GROQ_API_KEY:
             articles = await fetch_all_rss(max_per_source=5)
             india_articles = [a for a in articles if any(
                 keyword in a['source'].lower()
@@ -689,14 +716,14 @@ Premium Sources: The Hindu, Livemint, CNBC\\-TV18, Moneycontrol"""
 
 
 async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /cat command - AI-curated CAT GK preparation digest"""
+    """Handle /cat command - Groq-curated CAT GK preparation digest"""
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
 
         # Fetch articles relevant to CAT preparation
         articles = await fetch_all_rss(max_per_source=5)
 
-        if not articles or not claude_client:
+        if not articles or not GROQ_API_KEY:
             message = """🎓 CAT GK DIGEST
 
 📚 Daily current affairs and GK topics for CAT preparation:
@@ -740,15 +767,28 @@ Return JSON format:
 
 Articles: """ + "\n".join([f"- {a['title']} (Source: {a['source']})" for a in articles[:10]])
 
-        message = claude_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+        # Get Groq client
+        client = get_groq_client()
+        if not client:
+            logger.error("Groq client failed to initialize for CAT command")
+            message = """🎓 CAT GK DIGEST
+
+Daily current affairs preparation from top news sources.
+Covers: Economics, Policy, Business, Environment, Tech."""
+            await update.message.reply_text(message)
+            return
+
+        # Call Groq API
+        response = client.chat.completions.create(
+            model="mixtral-8x7b-32768",
             max_tokens=1200,
             messages=[
                 {"role": "user", "content": cat_prompt}
             ]
         )
 
-        response_text = message.content[0].text
+        # Parse Groq response (different format than Claude)
+        response_text = response.choices[0].message.content
 
         # Parse and format response
         try:
@@ -770,8 +810,8 @@ Articles: """ + "\n".join([f"- {a['title']} (Source: {a['source']})" for a in ar
 
                 await update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN_V2)
                 return
-        except:
-            pass
+        except json.JSONDecodeError:
+            logger.warning("Failed to parse Groq's JSON response for CAT")
 
         # Fallback message
         message = """🎓 CAT GK DIGEST
