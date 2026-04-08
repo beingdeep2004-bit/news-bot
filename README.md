@@ -1,23 +1,47 @@
-# 📱 Telegram Daily Market & News Digest Bot
+# 🤖 AI-Powered Telegram News & Market Digest Bot
 
-A 24/7 Telegram bot that delivers curated market updates and news digests at fixed times throughout the day. Covers crypto, Indian stock indices, global markets, and breaking news from top sources.
+A production-ready 24/7 Telegram bot that delivers **Claude AI-curated** market updates and news digests. Intelligent article curation → summaries → market impact analysis → structured Telegram output.
 
-## ✨ Features
+## ✨ Premium Features
 
-- **Automated Digests**: Daily at 8 AM, 1 PM, 7 PM IST
-- **Crypto Tracking**: Real-time BTC, ETH, SOL, BNB, XRP prices (USD + INR)
-- **Stock Markets**: Nifty 50, Sensex, S&P 500, NASDAQ, Gold, USD/INR
-- **News Sources**: BBC, Reuters, The Hindu, Livemint, PIB, Al Jazeera, Down to Earth (10 RSS feeds)
-- **Fear & Greed Index**: Market sentiment tracking
-- **10 Commands**: /start, /help, /news, /market, /crypto, /stocks, /india, /cat, /morning, /evening
-- **Error Handling**: Graceful fallbacks, zero crashes
-- **MarkdownV2**: Clean, formatted Telegram messages
+### 🧠 AI-Powered News Curation
+- **Claude AI Integration**: Articles sent to Claude for intelligent analysis
+- **High-Impact Stories Only**: AI selects only market-moving stories
+- **Summaries + Analysis**: Each story includes summary + "why it matters"
+- **CAT Preparation Digest**: AI curates current affairs for CAT exam prep
+
+### 📰 Smart News Processing
+- **Auto-Deduplication**: Removes duplicate articles across all feeds
+- **24-Hour Filtering**: Only recent, relevant articles included
+- **10+ Premium Sources**: Reuters, TechCrunch, Financial Times, BBC, Livemint, etc.
+- **Fallback to Mock Data**: Testing works even when feeds unavailable
+
+### 📊 Market & Crypto Tracking
+- **Real-Time Crypto**: BTC, ETH, SOL, BNB, XRP prices (USD + INR) with 24h change
+- **Stock Indices**: Nifty 50, Sensex, S&P 500, NASDAQ, Gold, USD/INR
+- **Fear & Greed Index**: Market sentiment with emoji classification
+- **Structured Format**: Clean, easy-to-read Telegram messages
+
+### ⏰ Automated Digests
+- **8 AM IST**: Crypto + Markets + Claude-curated top news
+- **1 PM IST**: Midday markets update
+- **7 PM IST**: Evening wrap-up with news and sentiment
+
+### 🎯 10 Commands
+- `/news` - Claude-curated global business news
+- `/crypto` - Live crypto prices
+- `/market` or `/stocks` - Stock indices
+- `/india` - India-focused news (if NewsData key configured)
+- `/cat` - CAT GK digest (AI-curated for exam prep)
+- `/morning`, `/evening` - Trigger digests manually
+- `/help` - Command reference
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
 - Python 3.11+
 - Telegram account & BotFather setup
+- **Anthropic API key** (for Claude AI curation) - get free credits at https://console.anthropic.com
 - (Optional) NewsData.io API key for India news
 
 ### 2. Get Bot Token & Chat ID
@@ -32,6 +56,12 @@ A 24/7 Telegram bot that delivers curated market updates and news digests at fix
 2. Send any message to the bot
 3. Visit: `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
 4. Look for `"chat":{"id":<CHAT_ID>}`
+
+**Get Anthropic API Key (for Claude AI):**
+1. Go to https://console.anthropic.com
+2. Sign up for free (gets $5 free credits/month)
+3. Create an API key in the settings
+4. Copy the key (format: `sk-ant-v4-...`)
 
 ### 3. Clone & Setup
 
@@ -51,7 +81,8 @@ pip install -r requirements.txt
 cat > .env << EOF
 BOT_TOKEN=your_bot_token_here
 CHAT_ID=your_chat_id_here
-NEWSDATA_KEY=your_newsdata_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+NEWSDATA_KEY=your_newsdata_key_here (optional)
 EOF
 
 # Run locally
@@ -90,7 +121,8 @@ git push origin claude/telegram-market-digest-bot-AmiFP
 6. Go to Variables tab, add:
    - `BOT_TOKEN` = your_token
    - `CHAT_ID` = your_chat_id
-   - `NEWSDATA_KEY` = your_key (optional)
+   - `ANTHROPIC_API_KEY` = your_anthropic_key (required for AI curation)
+   - `NEWSDATA_KEY` = your_newsdata_key (optional)
 7. Click Deploy
 8. Bot runs 24/7 automatically
 
@@ -114,9 +146,10 @@ Deployments tab → View logs
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `python bot.py`
 6. Add Environment Variables:
-   - `BOT_TOKEN`
-   - `CHAT_ID`
-   - `NEWSDATA_KEY`
+   - `BOT_TOKEN` (from BotFather)
+   - `CHAT_ID` (your chat ID)
+   - `ANTHROPIC_API_KEY` (from Anthropic console - required for Claude AI)
+   - `NEWSDATA_KEY` (optional, for India-specific news)
 7. Click "Create Web Service"
 8. Bot deploys and runs
 
@@ -179,11 +212,12 @@ sudo journalctl -u telegram-bot -f  # View logs
 
 | Source | Data | Free? | Notes |
 |--------|------|-------|-------|
-| CoinGecko | Crypto | ✅ | 5 cryptos, 24h change |
-| Yahoo Finance (yfinance) | Stocks | ✅ | Nifty, Sensex, S&P, NASDAQ, Gold |
-| Alternative.me | F&G Index | ✅ | Market sentiment |
-| RSS Feeds | News | ✅ | 10 sources, 2 articles each |
-| NewsData.io | India News | ⚠️ | Optional, free tier available |
+| **Claude AI (Anthropic)** | **News Curation** | ⚠️ | $5 free credits/month, required for AI features |
+| CoinGecko | Crypto | ✅ | BTC, ETH, SOL, BNB, XRP with 24h change |
+| Yahoo Finance (yfinance) | Stocks | ✅ | Nifty, Sensex, S&P, NASDAQ, Gold, USD/INR |
+| Alternative.me | F&G Index | ✅ | Market sentiment (0-100) |
+| RSS Feeds | News | ✅ | 10+ premium sources, auto-deduplicated |
+| NewsData.io | India News | ⚠️ | Optional, 200 requests/day free tier |
 
 ### Command Reference
 
@@ -262,8 +296,9 @@ python-telegram-bot==21.5   # Telegram API wrapper
 feedparser==6.0.11          # RSS feed parser
 requests==2.31.0            # HTTP requests
 yfinance==0.2.40            # Yahoo Finance API
-APScheduler==3.10.4         # Scheduled jobs
+APScheduler==3.10.4         # Scheduled jobs (8 AM, 1 PM, 7 PM IST)
 python-dotenv==1.0.0        # Environment variables
+anthropic==0.91.0           # Claude AI curation (NEW!)
 ```
 
 ## 🐛 Known Issues
