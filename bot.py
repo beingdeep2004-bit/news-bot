@@ -607,15 +607,15 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text("No recent articles found. Try again in a moment.")
             return
 
-        # Try Claude curation first
-        if claude_client:
+        # Try Groq AI curation first
+        if GROQ_API_KEY:
             curated = await ask_claude("Global Business & Markets", articles)
             if curated:
                 message = format_curated_news(curated, "Global Business & Markets")
                 await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
                 return
 
-        # Fallback to plain RSS if Claude fails
+        # Fallback to plain RSS if Groq fails or not configured
         message = fetch_rss_plain()
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
@@ -668,7 +668,7 @@ async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
 
         # Fallback to filtering RSS feeds for India-focused content
-        if claude_client:
+        if GROQ_API_KEY:
             articles = await fetch_all_rss(max_per_source=5)
             india_articles = [a for a in articles if any(
                 keyword in a['source'].lower()
@@ -705,7 +705,7 @@ async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Fetch articles relevant to CAT preparation
         articles = await fetch_all_rss(max_per_source=5)
 
-        if not articles or not claude_client:
+        if not articles or not GROQ_API_KEY:
             message = """🎓 CAT GK DIGEST
 
 📚 Daily current affairs and GK topics for CAT preparation:
@@ -722,7 +722,7 @@ Follow: Reuters, The Hindu, Livemint for best coverage."""
             await update.message.reply_text(message)
             return
 
-        # Get Claude to curate CAT-relevant content
+        # Get Groq to curate CAT-relevant content
         cat_prompt = """You are a CAT (Common Admission Test) exam preparation expert.
 
 From these news articles, identify stories MOST RELEVANT for CAT General Knowledge section.
@@ -749,15 +749,16 @@ Return JSON format:
 
 Articles: """ + "\n".join([f"- {a['title']} (Source: {a['source']})" for a in articles[:10]])
 
-        message = claude_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+        client = get_groq_client()
+        message = client.chat.completions.create(
+            model="mixtral-8x7b-32768",
             max_tokens=1200,
             messages=[
                 {"role": "user", "content": cat_prompt}
             ]
         )
 
-        response_text = message.content[0].text
+        response_text = message.choices[0].message.content
 
         # Parse and format response
         try:
