@@ -46,6 +46,15 @@ RSS_FEEDS = {
 
 IST = ZoneInfo("Asia/Kolkata")
 
+# ==================== HELPER FUNCTIONS ====================
+
+def escape_markdown(text: str) -> str:
+    """Escape special characters for MarkdownV2"""
+    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    for char in special_chars:
+        text = text.replace(char, f'\\{char}')
+    return text
+
 # ==================== API FUNCTIONS ====================
 
 def fetch_crypto_prices() -> str:
@@ -79,7 +88,7 @@ def fetch_crypto_prices() -> str:
         return message
     except Exception as e:
         logger.error(f"Crypto fetch error: {e}")
-        return f"*❌ Crypto Error:* {str(e)}"
+        return "*❌ Crypto Error:* API temporarily unavailable"
 
 
 def fetch_stock_prices() -> str:
@@ -114,7 +123,7 @@ def fetch_stock_prices() -> str:
         return message
     except Exception as e:
         logger.error(f"Stock fetch error: {e}")
-        return f"*❌ Stock Error:* {str(e)}"
+        return "*❌ Stock Error:* API temporarily unavailable"
 
 
 def fetch_rss(source: Optional[str] = None) -> str:
@@ -145,7 +154,7 @@ def fetch_rss(source: Optional[str] = None) -> str:
         return message
     except Exception as e:
         logger.error(f"RSS fetch error: {e}")
-        return f"*❌ News Error:* {str(e)}"
+        return "*❌ News Error:* API temporarily unavailable"
 
 
 def fetch_fear_greed() -> str:
@@ -174,7 +183,7 @@ def fetch_fear_greed() -> str:
         return "*⚠️ Fear & Greed data unavailable*"
     except Exception as e:
         logger.error(f"Fear & Greed error: {e}")
-        return f"*❌ F&G Error:* {str(e)}"
+        return "*❌ F&G Error:* API temporarily unavailable"
 
 
 def fetch_india_news() -> str:
@@ -312,7 +321,8 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2, disable_web_page_preview=True)
     except Exception as e:
         logger.error(f"News error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def market(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -323,7 +333,8 @@ async def market(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
         logger.error(f"Market error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -334,7 +345,8 @@ async def crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
         logger.error(f"Crypto error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def stocks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -345,7 +357,8 @@ async def stocks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
         logger.error(f"Stocks error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -361,7 +374,8 @@ async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2, disable_web_page_preview=True)
     except Exception as e:
         logger.error(f"India error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -382,7 +396,8 @@ Check back for daily updates\\."""
         await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
     except Exception as e:
         logger.error(f"CAT error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def morning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -392,7 +407,8 @@ async def morning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await morning_digest(context)
     except Exception as e:
         logger.error(f"Morning command error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def evening(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -402,7 +418,8 @@ async def evening(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await evening_digest(context)
     except Exception as e:
         logger.error(f"Evening command error: {e}")
-        await update.message.reply_text(f"*❌ Error:* {str(e)}", parse_mode=ParseMode.MARKDOWN_V2)
+        error_msg = escape_markdown(str(e))
+        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 # ==================== MAIN ====================
