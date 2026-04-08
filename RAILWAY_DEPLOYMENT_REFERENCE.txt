@@ -1,0 +1,207 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              🚂 RAILWAY.APP DEPLOYMENT - EXACT STEPS                      ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+PREREQUISITES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ GitHub account
+✅ Bot Token: 8758611475:AAGh5Ek0RNADWP3Gbw2DC8S0wQmFCT_dWts
+✅ Chat ID: 1285910479
+✅ Code already pushed to: beingdeep2004-bit/news-bot (branch: claude/telegram-market-digest-bot-AmiFP)
+
+STEP-BY-STEP DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. VISIT RAILWAY.APP
+   └─ Go to: https://railway.app
+   └─ Click "Sign Up" (use GitHub account for easiest auth)
+   └─ Authorize Railway to access your GitHub
+
+2. CREATE NEW PROJECT
+   └─ Click "New Project" button (top right)
+   └─ Click "Deploy from GitHub"
+   └─ Railway redirects to GitHub authorization
+
+3. AUTHORIZE RAILWAY ON GITHUB
+   └─ Click "Install" when prompted
+   └─ Select repository: beingdeep2004-bit/news-bot
+   └─ Click "Install & Authorize"
+
+4. SELECT REPOSITORY & BRANCH
+   └─ Choose repo: beingdeep2004-bit/news-bot
+   └─ Select branch: claude/telegram-market-digest-bot-AmiFP
+   └─ Click "Deploy"
+   └─ Railway auto-detects Python, starts building
+
+5. WAIT FOR INITIAL BUILD
+   └─ Railway shows "Building..." status
+   └─ Takes ~2-3 minutes
+   └─ You'll see build logs in real-time
+   └─ When done: "Build successful" ✅
+
+6. ADD ENVIRONMENT VARIABLES
+   ┌─ Once build is complete, click the project name
+   ├─ Navigate to "Variables" tab
+   └─ Add these 3 variables (one by one):
+
+   VARIABLE 1:
+   ├─ KEY:   BOT_TOKEN
+   ├─ VALUE: 8758611475:AAGh5Ek0RNADWP3Gbw2DC8S0wQmFCT_dWts
+   └─ Click "Add variable"
+
+   VARIABLE 2:
+   ├─ KEY:   CHAT_ID
+   ├─ VALUE: 1285910479
+   └─ Click "Add variable"
+
+   VARIABLE 3:
+   ├─ KEY:   NEWSDATA_KEY
+   ├─ VALUE: (leave empty - optional)
+   └─ Click "Add variable"
+
+7. REDEPLOY WITH VARIABLES
+   ├─ After adding all variables, click "Redeploy"
+   ├─ Railway rebuilds with new environment variables
+   ├─ Takes ~1-2 minutes
+   └─ When done: "Build successful" + "Bot started"
+
+8. VERIFY BOT IS RUNNING
+   ├─ Click "Logs" tab (should show live output)
+   ├─ Look for these lines:
+   │  ✅ Scheduler started - Jobs scheduled at 8 AM, 1 PM, 7 PM IST
+   │  🤖 Bot is running... Press Ctrl+C to stop.
+   └─ If you see these: BOT IS LIVE! ✅
+
+TESTING THE BOT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Open Telegram and send these commands to your bot:
+
+/start
+  Expected: Welcome message with bot name
+
+/help
+  Expected: List of all 10 commands with descriptions
+
+/crypto
+  Expected: Bitcoin, Ethereum, Solana, BNB, XRP prices (USD + INR + 24h %)
+
+/market
+  Expected: Nifty 50, Sensex, S&P 500, NASDAQ, Gold, USD/INR prices
+
+/news
+  Expected: 20 news articles from BBC, Hindu, Livemint, etc.
+
+If all commands return data: ✅ BOT WORKING PERFECTLY!
+
+AUTOMATIC DIGESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bot automatically sends:
+  📅 8:00 AM IST  (02:30 UTC) → Morning digest
+  📅 1:00 PM IST  (07:30 UTC) → Midday digest
+  📅 7:00 PM IST  (13:30 UTC) → Evening digest
+
+You'll receive messages automatically at these times.
+
+MONITORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check bot health anytime:
+  └─ Go to Railway dashboard
+  └─ Project → "Logs" tab
+  └─ View real-time output
+  └─ Look for "Digest sent" or error messages
+
+Common log patterns:
+  ✅ "Digest sent successfully" → Working correctly
+  ✅ "Job triggered" → Scheduled task ran
+  ❌ "Error" → Check the error message and troubleshoot
+  ℹ️  "Connection refused" → Network issue (rare)
+
+MAKING CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you modify bot.py or any code:
+
+1. Commit and push to GitHub:
+   └─ git add .
+   └─ git commit -m "Your message"
+   └─ git push origin claude/telegram-market-digest-bot-AmiFP
+
+2. Railway automatically redeploys:
+   └─ Detects new commits
+   └─ Rebuilds automatically
+   └─ No manual action needed
+
+3. Check deployment status:
+   └─ Watch Deployments tab
+   └─ Should show "Build in progress" → "Build successful"
+
+COSTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Railway Free Tier:
+  • 500 compute hours/month
+  • Bot runs 24/7 = ~720 hours
+  • ⚠️  You'll exceed free tier (~220 hours/month overage)
+  • Solution: Upgrade to Starter plan ($5-15/month)
+
+Pricing:
+  • Free: $0 (500 hrs/month) - NOT enough for 24/7
+  • Pro: $5/month (1000 hrs) - Enough for bot
+  • Plus: $20/month (unlimited) - For multiple bots
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Bot doesn't respond to commands
+  → Check: Logs tab for errors
+  → Verify: BOT_TOKEN is exactly correct
+  → Verify: CHAT_ID is exactly correct
+  → Check: Bot is added to your Telegram chat/channel
+  → Fix: Redeploy (click Redeploy button)
+
+❌ Build fails
+  → Check: Build logs for Python errors
+  → Common: Missing dependency (shouldn't happen)
+  → Fix: Restart deployment
+
+❌ Digests don't send at scheduled time
+  → Check: Logs around 08:00, 13:00, 19:00 IST
+  → Verify: Railway timezone is correct
+  → Fix: Restart deployment
+
+❌ Logs say "Connection refused"
+  → Cause: API temporarily unavailable
+  → Fix: Bot retries automatically
+  → Check: Logs in 5 minutes - should recover
+
+❌ Memory/CPU errors
+  → Cause: Free tier overloaded
+  → Fix: Upgrade to Starter ($5/month)
+  → Check: Railway dashboard for resource usage
+
+QUICK RESTART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If bot seems stuck:
+  └─ Go to Railway dashboard
+  └─ Find your project
+  └─ Click "Redeploy" button
+  └─ Railway restarts the bot in ~30 seconds
+  └─ Check logs - should see "Bot is running" again
+
+THAT'S IT!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your bot is now live, 24/7, sending digests automatically.
+
+Questions?
+  → Check README.md for full documentation
+  → Check DEPLOYMENT.md for alternative platforms
+  → Check logs for specific errors
+
+Good luck! 🚀
