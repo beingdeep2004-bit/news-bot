@@ -214,7 +214,7 @@ def fetch_india_news() -> str:
 async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
     """8 AM IST - Crypto + Markets + Top News"""
     try:
-        message = f"*🌅 GOOD MORNING! ({datetime.now(IST).strftime('%I:%M %p IST')})*\n\n"
+        message = f"🌅 GOOD MORNING! ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
 
         crypto = fetch_crypto_prices()
         stocks = fetch_stock_prices()
@@ -225,9 +225,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         await context.bot.send_message(
             chat_id=CHAT_ID,
-            text=message,
-            parse_mode=ParseMode.MARKDOWN_V2,
-            disable_web_page_preview=True
+            text=message
         )
         logger.info("Morning digest sent successfully")
     except Exception as e:
@@ -237,7 +235,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
     """1 PM IST - Markets Update + Crypto"""
     try:
-        message = f"*📈 MIDDAY MARKETS UPDATE ({datetime.now(IST).strftime('%I:%M %p IST')})*\n\n"
+        message = f"📈 MIDDAY MARKETS UPDATE ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
 
         stocks = fetch_stock_prices()
         crypto = fetch_crypto_prices()
@@ -246,9 +244,7 @@ async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         await context.bot.send_message(
             chat_id=CHAT_ID,
-            text=message,
-            parse_mode=ParseMode.MARKDOWN_V2,
-            disable_web_page_preview=True
+            text=message
         )
         logger.info("Midday digest sent successfully")
     except Exception as e:
@@ -258,7 +254,7 @@ async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 async def evening_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
     """7 PM IST - Markets Close + News Wrap + F&G"""
     try:
-        message = f"*🌆 EVENING WRAP UP ({datetime.now(IST).strftime('%I:%M %p IST')})*\n\n"
+        message = f"🌆 EVENING WRAP UP ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
 
         stocks = fetch_stock_prices()
         fear_greed = fetch_fear_greed()
@@ -268,9 +264,7 @@ async def evening_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         await context.bot.send_message(
             chat_id=CHAT_ID,
-            text=message,
-            parse_mode=ParseMode.MARKDOWN_V2,
-            disable_web_page_preview=True
+            text=message
         )
         logger.info("Evening digest sent successfully")
     except Exception as e:
@@ -283,8 +277,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /start command"""
     try:
         user = update.effective_user
-        message = f"👋 *Welcome {user.first_name}\\!*\n\n_Daily Market & News Digest Bot_\n\nUse /help to see all commands\\."
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+        message = f"👋 Welcome {user.first_name}!\n\nDaily Market & News Digest Bot\n\nUse /help to see all commands."
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"Start error: {e}")
         await update.message.reply_text(f"Error: {str(e)}")
@@ -293,21 +287,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /help command"""
     try:
-        message = """*📋 AVAILABLE COMMANDS*
+        message = """📋 AVAILABLE COMMANDS
 
-/start \\- Welcome message
-/help \\- Show this menu
-/news \\- Latest top news from all sources
-/market \\- Stock indices update
-/crypto \\- Cryptocurrency prices
-/stocks \\- Detailed market indices
-/india \\- India breaking news \\(if enabled\\)
-/cat \\- CAT GK preparation digest
-/morning \\- Get morning digest now
-/evening \\- Get evening digest now
+/start - Welcome message
+/help - Show this menu
+/news - Latest top news from all sources
+/market - Stock indices update
+/crypto - Cryptocurrency prices
+/stocks - Detailed market indices
+/india - India breaking news (if enabled)
+/cat - CAT GK preparation digest
+/morning - Get morning digest now
+/evening - Get evening digest now
 
-_Data updates automatically at 8 AM, 1 PM, 7 PM IST_"""
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+Data updates automatically at 8 AM, 1 PM, 7 PM IST"""
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"Help error: {e}")
         await update.message.reply_text(f"Error: {str(e)}")
@@ -318,11 +312,11 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
         message = fetch_rss()
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2, disable_web_page_preview=True)
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"News error: {e}")
         error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(f"❌ Error: {error_msg}")
 
 
 async def market(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -365,36 +359,36 @@ async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         message = fetch_india_news()
 
         if message is None:
-            message = "_India news requires NEWSDATA_KEY environment variable\\._"
-            await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+            message = "India news requires NEWSDATA_KEY environment variable."
+            await update.message.reply_text(message)
         else:
-            await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2, disable_web_page_preview=True)
+            await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"India error: {e}")
         error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(f"❌ Error: {error_msg}")
 
 
 async def cat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /cat command - CAT GK preparation"""
     try:
-        message = """*🎓 CAT GK DIGEST*
+        message = """🎓 CAT GK DIGEST
 
-_Coming Soon\\!_
+Coming Soon!
 
 This section will include:
-\\- Current Affairs
-\\- Economic News
-\\- Business Headlines
-\\- Government Policies
-\\- Stock Market Insights
+- Current Affairs
+- Economic News
+- Business Headlines
+- Government Policies
+- Stock Market Insights
 
-Check back for daily updates\\."""
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+Check back for daily updates."""
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"CAT error: {e}")
         error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(f"❌ Error: {error_msg}")
 
 
 async def morning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -405,7 +399,7 @@ async def morning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logger.error(f"Morning command error: {e}")
         error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(f"❌ Error: {error_msg}")
 
 
 async def evening(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -416,7 +410,7 @@ async def evening(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logger.error(f"Evening command error: {e}")
         error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(f"❌ Error: {error_msg}")
 
 
 # ==================== MAIN ====================
