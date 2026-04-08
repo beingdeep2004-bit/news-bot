@@ -75,7 +75,7 @@ def fetch_crypto_prices() -> str:
             "ripple": "XRP"
         }
 
-        message = "*🪙 CRYPTO PRICES*\n"
+        message = "🪙 CRYPTO PRICES\n"
         for key, symbol in cryptos.items():
             if key in data:
                 usd = data[key].get("usd", 0)
@@ -83,7 +83,7 @@ def fetch_crypto_prices() -> str:
                 change = data[key].get("usd_24h_change", 0)
 
                 emoji = "📈" if change > 0 else "📉"
-                message += f"\n{symbol}: ${usd:,.0f} (₹{inr:,.0f}) {emoji} {change:.2f}%"
+                message += f"\n{symbol}: ${usd:,.0f} (₹{inr:,.0f}) {emoji} {change:+.2f}%"
 
         return message
     except Exception as e:
@@ -97,7 +97,7 @@ def fetch_stock_prices() -> str:
         tickers = ["^NSEI", "^BSESN", "^GSPC", "^IXIC", "INR=X", "GC=F"]
         names = ["Nifty 50", "Sensex", "S&P 500", "NASDAQ", "USD/INR", "Gold"]
 
-        message = "*📊 STOCK INDICES*\n"
+        message = "📊 STOCK INDICES\n"
         for ticker, name in zip(tickers, names):
             try:
                 data = yf.Ticker(ticker)
@@ -118,7 +118,7 @@ def fetch_stock_prices() -> str:
                         message += f"\n{name}: {current:,.0f} {emoji} {change:+.2f}%"
             except Exception as e:
                 logger.warning(f"Error fetching {name}: {e}")
-                message += f"\n{name}: ⚠️ Error"
+                message += f"\n{name}: [Error]"
 
         return message
     except Exception as e:
@@ -179,8 +179,8 @@ def fetch_fear_greed() -> str:
             else:
                 emoji = "🤑"
 
-            return f"*🎭 FEAR & GREED INDEX*\n{emoji} {index}/100 - {label}"
-        return "*⚠️ Fear & Greed data unavailable*"
+            return f"🎭 FEAR & GREED INDEX\n{emoji} {index}/100 - {label}"
+        return "⚠️ Fear & Greed data unavailable"
     except Exception as e:
         logger.error(f"Fear & Greed error: {e}")
         return "*❌ F&G Error:* API temporarily unavailable"
@@ -330,11 +330,10 @@ async def market(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
         message = fetch_stock_prices()
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"Market error: {e}")
-        error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text("❌ Error: API temporarily unavailable")
 
 
 async def crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -342,11 +341,10 @@ async def crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
         message = fetch_crypto_prices()
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"Crypto error: {e}")
-        error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text("❌ Error: API temporarily unavailable")
 
 
 async def stocks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -354,11 +352,10 @@ async def stocks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
         message = fetch_stock_prices()
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"Stocks error: {e}")
-        error_msg = escape_markdown(str(e))
-        await update.message.reply_text(f"*❌ Error:* {error_msg}", parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text("❌ Error: API temporarily unavailable")
 
 
 async def india(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
