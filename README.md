@@ -1,14 +1,15 @@
 # 🤖 AI-Powered Telegram News & Market Digest Bot
 
-A production-ready 24/7 Telegram bot that delivers **Claude AI-curated** market updates and news digests. Intelligent article curation → summaries → market impact analysis → structured Telegram output.
+A production-ready 24/7 Telegram bot that delivers **FREE Groq AI-curated** market updates and news digests. Intelligent article curation → summaries → market impact analysis → structured Telegram output. **No credits needed - completely free!**
 
 ## ✨ Premium Features
 
-### 🧠 AI-Powered News Curation
-- **Claude AI Integration**: Articles sent to Claude for intelligent analysis
+### 🧠 AI-Powered News Curation (FREE - No Credits!)
+- **Groq AI Integration**: Articles sent to Groq for intelligent analysis (100% free!)
 - **High-Impact Stories Only**: AI selects only market-moving stories
 - **Summaries + Analysis**: Each story includes summary + "why it matters"
 - **CAT Preparation Digest**: AI curates current affairs for CAT exam prep
+- **Forever Free**: No credits, no payment, no limits
 
 ### 📰 Smart News Processing
 - **Auto-Deduplication**: Removes duplicate articles across all feeds
@@ -41,7 +42,7 @@ A production-ready 24/7 Telegram bot that delivers **Claude AI-curated** market 
 ### 1. Prerequisites
 - Python 3.11+
 - Telegram account & BotFather setup
-- **Anthropic API key** (for Claude AI curation) - get free credits at https://console.anthropic.com
+- **Groq API key** (for free AI news curation) - get free at https://console.groq.com (no payment needed!)
 - (Optional) NewsData.io API key for India news
 
 ### 2. Get Bot Token & Chat ID
@@ -57,11 +58,12 @@ A production-ready 24/7 Telegram bot that delivers **Claude AI-curated** market 
 3. Visit: `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
 4. Look for `"chat":{"id":<CHAT_ID>}`
 
-**Get Anthropic API Key (for Claude AI):**
-1. Go to https://console.anthropic.com
-2. Sign up for free (gets $5 free credits/month)
-3. Create an API key in the settings
-4. Copy the key (format: `sk-ant-v4-...`)
+**Get Groq API Key (for FREE AI News Curation):**
+1. Go to https://console.groq.com
+2. Sign up for free (no payment required ever!)
+3. Create an API key in the API Keys section
+4. Copy the key (format: `gsk_...`)
+5. No credits needed - completely unlimited for reasonable usage!
 
 ### 3. Clone & Setup
 
@@ -81,7 +83,7 @@ pip install -r requirements.txt
 cat > .env << EOF
 BOT_TOKEN=your_bot_token_here
 CHAT_ID=your_chat_id_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 NEWSDATA_KEY=your_newsdata_key_here (optional)
 EOF
 
@@ -121,7 +123,7 @@ git push origin claude/telegram-market-digest-bot-AmiFP
 6. Go to Variables tab, add:
    - `BOT_TOKEN` = your_token
    - `CHAT_ID` = your_chat_id
-   - `ANTHROPIC_API_KEY` = your_anthropic_key (required for AI curation)
+   - `GROQ_API_KEY` = your_groq_key (free AI curation - get at https://console.groq.com)
    - `NEWSDATA_KEY` = your_newsdata_key (optional)
 7. Click Deploy
 8. Bot runs 24/7 automatically
@@ -148,7 +150,7 @@ Deployments tab → View logs
 6. Add Environment Variables:
    - `BOT_TOKEN` (from BotFather)
    - `CHAT_ID` (your chat ID)
-   - `ANTHROPIC_API_KEY` (from Anthropic console - required for Claude AI)
+   - `GROQ_API_KEY` (from https://console.groq.com - free, no payment needed!)
    - `NEWSDATA_KEY` (optional, for India-specific news)
 7. Click "Create Web Service"
 8. Bot deploys and runs
@@ -212,7 +214,7 @@ sudo journalctl -u telegram-bot -f  # View logs
 
 | Source | Data | Free? | Notes |
 |--------|------|-------|-------|
-| **Claude AI (Anthropic)** | **News Curation** | ⚠️ | $5 free credits/month, required for AI features |
+| **Groq AI** | **News Curation** | ✅ | 100% FREE - no credits, no payment ever needed! |
 | CoinGecko | Crypto | ✅ | BTC, ETH, SOL, BNB, XRP with 24h change |
 | Yahoo Finance (yfinance) | Stocks | ✅ | Nifty, Sensex, S&P, NASDAQ, Gold, USD/INR |
 | Alternative.me | F&G Index | ✅ | Market sentiment (0-100) |
@@ -298,7 +300,7 @@ requests==2.31.0            # HTTP requests
 yfinance==0.2.40            # Yahoo Finance API
 APScheduler==3.10.4         # Scheduled jobs (8 AM, 1 PM, 7 PM IST)
 python-dotenv==1.0.0        # Environment variables
-anthropic==0.91.0           # Claude AI curation (NEW!)
+groq==0.4.2                 # Groq AI (FREE news curation - no credits needed!)
 ```
 
 ## 🐛 Known Issues

@@ -20,16 +20,16 @@ from apscheduler.triggers.cron import CronTrigger
 from telegram import Update, Chat
 from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram.constants import ParseMode, ChatAction
-from anthropic import Anthropic
+from groq import Groq
 
 # ==================== CONFIG ====================
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID_HERE")
 NEWSDATA_KEY = os.getenv("NEWSDATA_KEY", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
-# Initialize Claude client
-claude_client = Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+# Initialize Groq client (completely free, no credits needed!)
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 # Logging setup
 logging.basicConfig(
@@ -94,21 +94,22 @@ def escape_markdown(text: str) -> str:
 
 async def ask_claude(category: str, articles: List[Dict]) -> Optional[str]:
     """
-    Send articles to Claude for intelligent curation and summarization
+    Send articles to Groq for intelligent curation and summarization
     Returns formatted message with high-impact stories, summaries, and insights
+    Completely FREE - no credits needed!
     """
-    if not claude_client:
-        logger.warning("Claude client not initialized - set ANTHROPIC_API_KEY")
+    if not groq_client:
+        logger.warning("Groq client not initialized - set GROQ_API_KEY")
         return None
 
     try:
-        # Format articles for Claude
+        # Format articles for Groq
         articles_text = "\n".join([
             f"- Title: {a.get('title', 'N/A')}\n"
             f"  Source: {a.get('source', 'N/A')}\n"
             f"  Link: {a.get('link', 'N/A')}\n"
             f"  Published: {a.get('published', 'N/A')}"
-            for a in articles[:15]  # Send top 15 articles to Claude
+            for a in articles[:15]  # Send top 15 articles to Groq
         ])
 
         prompt = f"""You are a financial news curator. Analyze these {category} news articles and:
@@ -139,15 +140,15 @@ ARTICLES TO CURATE:
 
 Return ONLY the JSON, no additional text."""
 
-        message = claude_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+        message = groq_client.chat.completions.create(
+            model="mixtral-8x7b-32768",
             max_tokens=1000,
             messages=[
                 {"role": "user", "content": prompt}
             ]
         )
 
-        response_text = message.content[0].text
+        response_text = message.choices[0].message.content
 
         # Try to parse JSON response
         try:
@@ -159,12 +160,12 @@ Return ONLY the JSON, no additional text."""
                 data = json.loads(json_str)
                 return data
         except json.JSONDecodeError:
-            logger.warning("Failed to parse Claude's JSON response")
+            logger.warning("Failed to parse Groq's JSON response")
             return None
 
         return None
     except Exception as e:
-        logger.error(f"Claude API error: {e}")
+        logger.error(f"Groq API error: {e}")
         return None
 
 def format_curated_news(curated_data: Optional[Dict], category: str = "Global") -> str:
