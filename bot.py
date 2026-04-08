@@ -28,8 +28,15 @@ CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID_HERE")
 NEWSDATA_KEY = os.getenv("NEWSDATA_KEY", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
-# Initialize Groq client (completely free, no credits needed!)
-groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+# Initialize Groq client lazily (only when needed, not at startup)
+groq_client = None
+
+def get_groq_client():
+    """Get or initialize Groq client lazily"""
+    global groq_client
+    if groq_client is None and GROQ_API_KEY:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+    return groq_client
 
 # Logging setup
 logging.basicConfig(
@@ -98,7 +105,8 @@ async def ask_claude(category: str, articles: List[Dict]) -> Optional[str]:
     Returns formatted message with high-impact stories, summaries, and insights
     Completely FREE - no credits needed!
     """
-    if not groq_client:
+    client = get_groq_client()
+    if not client:
         logger.warning("Groq client not initialized - set GROQ_API_KEY")
         return None
 
@@ -140,7 +148,7 @@ ARTICLES TO CURATE:
 
 Return ONLY the JSON, no additional text."""
 
-        message = groq_client.chat.completions.create(
+        message = client.chat.completions.create(
             model="mixtral-8x7b-32768",
             max_tokens=1000,
             messages=[
