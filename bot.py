@@ -35,7 +35,11 @@ def get_groq_client():
     """Get or initialize Groq client lazily"""
     global groq_client
     if groq_client is None and GROQ_API_KEY:
-        groq_client = Groq(api_key=GROQ_API_KEY)
+        try:
+            groq_client = Groq(api_key=GROQ_API_KEY)
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq client: {e}")
+            return None
     return groq_client
 
 # Logging setup
@@ -105,9 +109,13 @@ async def ask_claude(category: str, articles: List[Dict]) -> Optional[str]:
     Returns formatted message with high-impact stories, summaries, and insights
     Completely FREE - no credits needed!
     """
+    if not GROQ_API_KEY:
+        logger.warning("GROQ_API_KEY not set")
+        return None
+
     client = get_groq_client()
     if not client:
-        logger.warning("Groq client not initialized - set GROQ_API_KEY")
+        logger.warning("Groq client not available - will use fallback RSS")
         return None
 
     try:
