@@ -194,26 +194,33 @@ Return ONLY the JSON, no additional text."""
         return None
 
 def format_curated_news(curated_data: Optional[Dict], category: str = "Global") -> str:
-    """Format Claude-curated news into readable Telegram message"""
+    """Format Groq-curated news into readable Telegram message with proper escaping"""
     if not curated_data:
-        return "❌ Unable to curate news right now. Try again in a moment."
+        return "❌ Unable to curate news right now\\. Try again in a moment\\."
 
     try:
-        message = f"📰 *TOP {category.upper()} NEWS* (AI-Curated)\n"
-        message += "=" * 50 + "\n\n"
+        message = f"📰 *TOP {category.upper()} NEWS* \\(AI\\-Curated\\)\n"
+        message += "\\=" * 50 + "\n\n"
 
         stories = curated_data.get("stories", [])
         for story in stories:
-            message += f"*#{story.get('rank', '?')}. {story.get('title', 'N/A')}*\n"
-            message += f"📌 {story.get('summary', 'N/A')}\n"
-            message += f"💡 Why it matters: {story.get('why_it_matters', 'N/A')}\n"
-            message += f"Source: {story.get('source', 'N/A')}\n"
-            message += f"🔗 {story.get('link', 'N/A')}\n\n"
+            rank = escape_markdown(str(story.get('rank', '?')))
+            title = escape_markdown(str(story.get('title', 'N/A')))
+            summary = escape_markdown(str(story.get('summary', 'N/A')))
+            why_matters = escape_markdown(str(story.get('why_it_matters', 'N/A')))
+            source = escape_markdown(str(story.get('source', 'N/A')))
+            link = escape_markdown(str(story.get('link', 'N/A')))
+
+            message += f"*#{rank}\\. {title}*\n"
+            message += f"📌 {summary}\n"
+            message += f"💡 Why it matters: {why_matters}\n"
+            message += f"Source: {source}\n"
+            message += f"🔗 {link}\n\n"
 
         return message
     except Exception as e:
         logger.error(f"Error formatting curated news: {e}")
-        return "Error formatting news. Please try again."
+        return "Error formatting news\\. Please try again\\."
 
 # ==================== API FUNCTIONS ====================
 
@@ -490,8 +497,8 @@ def fetch_india_news() -> str:
 async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
     """8 AM IST - Crypto + Markets + Groq-curated Top News"""
     try:
-        message = f"🌅 *GOOD MORNING!* ({datetime.now(IST).strftime('%I:%M %p IST')})\n"
-        message += "=" * 60 + "\n\n"
+        message = f"🌅 *GOOD MORNING\\!* ({datetime.now(IST).strftime('%I:%M %p IST')})\n"
+        message += "\\=" * 60 + "\n\n"
 
         # Market data
         crypto = fetch_crypto_prices()
@@ -508,11 +515,14 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
                     curated = await ask_claude("Global Business & Markets", articles)
                     if curated:
                         stories = curated.get("stories", [])[:3]  # Top 3 stories
-                        message += "*📰 TODAY'S TOP NEWS* (AI\\-Curated)\n"
+                        message += "*📰 TODAY'S TOP NEWS* \\(AI\\-Curated\\)\n"
                         for story in stories:
-                            message += f"\n*{story.get('title', 'N/A')}*\n"
-                            message += f"📌 {story.get('summary', 'N/A')}\n"
-                            message += f"💡 Why it matters: {story.get('why_it_matters', 'N/A')}\n"
+                            title = escape_markdown(str(story.get('title', 'N/A')))
+                            summary = escape_markdown(str(story.get('summary', 'N/A')))
+                            why_matters = escape_markdown(str(story.get('why_it_matters', 'N/A')))
+                            message += f"\n*{title}*\n"
+                            message += f"📌 {summary}\n"
+                            message += f"💡 Why it matters: {why_matters}\n"
             except Exception as e:
                 logger.warning(f"Groq integration in morning digest failed: {e}")
                 message += fetch_rss_plain()
@@ -798,15 +808,21 @@ Covers: Economics, Policy, Business, Environment, Tech."""
                 json_str = response_text[json_start:json_end]
                 data = json.loads(json_str)
 
-                msg = "🎓 *CAT GK DIGEST* (AI\\-Curated)\n"
-                msg += "=" * 50 + "\n\n"
+                msg = "🎓 *CAT GK DIGEST* \\(AI\\-Curated\\)\n"
+                msg += "\\=" * 50 + "\n\n"
 
                 for story in data.get("stories", []):
-                    msg += f"*{story.get('title', 'N/A')}*\n"
-                    msg += f"📌 CAT Relevance: {story.get('cat_relevance', 'N/A')}\n"
-                    msg += f"📚 Key Facts: {story.get('key_facts', 'N/A')}\n"
-                    msg += f"Source: {story.get('source', 'N/A')}\n"
-                    msg += f"🔗 {story.get('link', 'N/A')}\n\n"
+                    title = escape_markdown(str(story.get('title', 'N/A')))
+                    cat_relevance = escape_markdown(str(story.get('cat_relevance', 'N/A')))
+                    key_facts = escape_markdown(str(story.get('key_facts', 'N/A')))
+                    source = escape_markdown(str(story.get('source', 'N/A')))
+                    link = escape_markdown(str(story.get('link', 'N/A')))
+
+                    msg += f"*{title}*\n"
+                    msg += f"📌 CAT Relevance: {cat_relevance}\n"
+                    msg += f"📚 Key Facts: {key_facts}\n"
+                    msg += f"Source: {source}\n"
+                    msg += f"🔗 {link}\n\n"
 
                 await update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN_V2)
                 return
