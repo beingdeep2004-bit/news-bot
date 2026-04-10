@@ -508,7 +508,7 @@ def fetch_india_news() -> str:
 
 # ==================== DIGEST MESSAGES ====================
 
-async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def morning_digest(bot) -> None:
     """8 AM IST - Crypto + Markets + Groq-curated Top News"""
     try:
         message = f"🌅 *GOOD MORNING\\!* ({datetime.now(IST).strftime('%I:%M %p IST')})\n"
@@ -543,7 +543,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
         else:
             message += fetch_rss_plain()
 
-        await context.bot.send_message(
+        await bot.send_message(
             chat_id=CHAT_ID,
             text=message,
             parse_mode=ParseMode.MARKDOWN_V2
@@ -553,7 +553,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Morning digest error: {e}")
         # Send simplified version on error
         try:
-            await context.bot.send_message(
+            await bot.send_message(
                 chat_id=CHAT_ID,
                 text="🌅 Morning digest: Markets data available. News curation temporarily unavailable."
             )
@@ -561,7 +561,7 @@ async def morning_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
             pass
 
 
-async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def midday_digest(bot) -> None:
     """1 PM IST - Markets Update + Crypto"""
     try:
         message = f"📈 MIDDAY MARKETS UPDATE ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
@@ -571,7 +571,7 @@ async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         message += f"{stocks}\n\n{crypto}"
 
-        await context.bot.send_message(
+        await bot.send_message(
             chat_id=CHAT_ID,
             text=message
         )
@@ -580,7 +580,7 @@ async def midday_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Midday digest error: {e}")
 
 
-async def evening_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def evening_digest(bot) -> None:
     """7 PM IST - Markets Close + News Wrap + F&G"""
     try:
         message = f"🌆 EVENING WRAP UP ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
@@ -591,7 +591,7 @@ async def evening_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         message += f"{stocks}\n\n{fear_greed}\n\n{news}"
 
-        await context.bot.send_message(
+        await bot.send_message(
             chat_id=CHAT_ID,
             text=message,
             parse_mode=ParseMode.MARKDOWN_V2
@@ -873,7 +873,7 @@ async def morning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /morning command"""
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
-        await morning_digest(context)
+        await morning_digest(context.bot)
     except Exception as e:
         logger.error(f"Morning command error: {e}")
         error_msg = escape_markdown(str(e))
@@ -884,7 +884,7 @@ async def evening(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /evening command"""
     try:
         await update.message.chat.send_action(ChatAction.TYPING)
-        await evening_digest(context)
+        await evening_digest(context.bot)
     except Exception as e:
         logger.error(f"Evening command error: {e}")
         error_msg = escape_markdown(str(e))
