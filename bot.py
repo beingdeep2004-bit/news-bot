@@ -6,6 +6,8 @@ Features: RSS aggregation → deduplication → Claude AI curation → structure
 
 import os
 import logging
+import signal
+import sys
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from zoneinfo import ZoneInfo
@@ -877,6 +879,15 @@ def main():
     # Create application
     application = Application.builder().token(BOT_TOKEN).build()
 
+    # Handle graceful shutdown on SIGTERM (Railway sends this signal before killing)
+    def shutdown_handler(signum, frame):
+        logger.info("🛑 Received shutdown signal, stopping gracefully...")
+        application.stop()
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, shutdown_handler)
+    signal.signal(signal.SIGINT, shutdown_handler)
+
     # Add command handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
@@ -922,9 +933,15 @@ def main():
     scheduler.start()
     logger.info("✅ Scheduler started - Jobs scheduled at 8 AM, 1 PM, 7 PM IST")
 
-    # Start bot
+    # Start bot with error handling
     logger.info("🤖 Bot is running... Press Ctrl+C to stop.")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    try:
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.error(f"Bot error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
