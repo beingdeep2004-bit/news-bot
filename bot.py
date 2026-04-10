@@ -8,11 +8,13 @@ import os
 import logging
 import signal
 import sys
+import asyncio
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from zoneinfo import ZoneInfo
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 import feedparser
@@ -165,14 +167,23 @@ Return ONLY the JSON, no additional text."""
             logger.error("Groq client failed to initialize")
             return None
 
-        # Call Groq API
-        message = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            max_tokens=1000,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
+        # Call Groq API in thread pool (it's a blocking call)
+        def groq_call():
+            return client.chat.completions.create(
+                model="mixtral-8x7b-32768",
+                max_tokens=1000,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
+        try:
+            # Run blocking Groq call in executor to avoid blocking event loop
+            message = await asyncio.to_thread(groq_call)
+            logger.info("✅ Groq API call successful")
+        except Exception as groq_error:
+            logger.error(f"Groq API call failed: {groq_error}")
+            return None
 
         # Parse Groq response (different format than Claude)
         response_text = message.choices[0].message.content
@@ -185,14 +196,15 @@ Return ONLY the JSON, no additional text."""
             if json_start >= 0 and json_end > json_start:
                 json_str = response_text[json_start:json_end]
                 data = json.loads(json_str)
+                logger.info(f"✅ Successfully parsed {len(data.get('stories', []))} stories from Groq")
                 return data
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse Groq's JSON response")
+        except json.JSONDecodeError as json_err:
+            logger.warning(f"Failed to parse Groq's JSON response: {json_err}")
             return None
 
         return None
     except Exception as e:
-        logger.error(f"Groq API error: {e}")
+        logger.error(f"Groq API error: {e}", exc_info=True)
         return None
 
 def format_curated_news(curated_data: Optional[Dict], category: str = "Global") -> str:
@@ -790,14 +802,28 @@ Covers: Economics, Policy, Business, Environment, Tech."""
             await update.message.reply_text(message)
             return
 
-        # Call Groq API
-        response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            max_tokens=1200,
-            messages=[
-                {"role": "user", "content": cat_prompt}
-            ]
-        )
+        # Call Groq API in thread pool (it's a blocking call)
+        def groq_cat_call():
+            return client.chat.completions.create(
+                model="mixtral-8x7b-32768",
+                max_tokens=1200,
+                messages=[
+                    {"role": "user", "content": cat_prompt}
+                ]
+            )
+
+        try:
+            # Run blocking Groq call in executor to avoid blocking event loop
+            response = await asyncio.to_thread(groq_cat_call)
+            logger.info("✅ Groq API call for CAT successful")
+        except Exception as groq_error:
+            logger.error(f"Groq CAT API call failed: {groq_error}")
+            message = """🎓 CAT GK DIGEST
+
+Daily current affairs preparation from top news sources.
+Covers: Economics, Policy, Business, Environment, Tech."""
+            await update.message.reply_text(message)
+            return
 
         # Parse Groq response (different format than Claude)
         response_text = response.choices[0].message.content
