@@ -170,7 +170,7 @@ Return ONLY the JSON, no additional text."""
         # Call Groq API in thread pool (it's a blocking call)
         def groq_call():
             return client.chat.completions.create(
-                model="mixtral-8x7b-32768",
+                model="llama-3.1-70b-versatile",
                 max_tokens=1000,
                 messages=[
                     {"role": "user", "content": prompt}
@@ -182,7 +182,7 @@ Return ONLY the JSON, no additional text."""
             message = await asyncio.to_thread(groq_call)
             logger.info("✅ Groq API call successful")
         except Exception as groq_error:
-            logger.error(f"Groq API call failed: {groq_error}")
+            logger.error(f"Groq API call failed: {groq_error}", exc_info=True)
             return None
 
         # Parse Groq response (different format than Claude)
@@ -539,9 +539,6 @@ async def morning_digest(bot) -> None:
                             message += f"💡 Why it matters: {why_matters}\n"
             except Exception as e:
                 logger.warning(f"Groq integration in morning digest failed: {e}")
-                message += fetch_rss_plain()
-        else:
-            message += fetch_rss_plain()
 
         await bot.send_message(
             chat_id=CHAT_ID,
@@ -581,20 +578,18 @@ async def midday_digest(bot) -> None:
 
 
 async def evening_digest(bot) -> None:
-    """7 PM IST - Markets Close + News Wrap + F&G"""
+    """7 PM IST - Markets Close + F&G"""
     try:
         message = f"🌆 EVENING WRAP UP ({datetime.now(IST).strftime('%I:%M %p IST')})\n\n"
 
         stocks = fetch_stock_prices()
         fear_greed = fetch_fear_greed()
-        news = fetch_rss_plain()
 
-        message += f"{stocks}\n\n{fear_greed}\n\n{news}"
+        message += f"{stocks}\n\n{fear_greed}"
 
         await bot.send_message(
             chat_id=CHAT_ID,
-            text=message,
-            parse_mode=ParseMode.MARKDOWN_V2
+            text=message
         )
         logger.info("Evening digest sent successfully")
     except Exception as e:
@@ -657,9 +652,9 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
                 return
 
-        # Fallback to plain RSS if Groq fails
+        # Fallback to plain RSS if Groq fails (send as plain text)
         message = fetch_rss_plain()
-        await update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_text(message)
     except Exception as e:
         logger.error(f"News error: {e}")
         await update.message.reply_text("❌ Error fetching news. Try again later.")
@@ -805,7 +800,7 @@ Covers: Economics, Policy, Business, Environment, Tech."""
         # Call Groq API in thread pool (it's a blocking call)
         def groq_cat_call():
             return client.chat.completions.create(
-                model="mixtral-8x7b-32768",
+                model="llama-3.1-70b-versatile",
                 max_tokens=1200,
                 messages=[
                     {"role": "user", "content": cat_prompt}
