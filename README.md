@@ -1,336 +1,142 @@
-# 🤖 AI-Powered Telegram News & Market Digest Bot
+⛓️ ChainMe — Spell Your Name in Crypto
+========================================
 
-A production-ready 24/7 Telegram bot that delivers **FREE Groq AI-curated** market updates and news digests. Intelligent article curation → summaries → market impact analysis → structured Telegram output. **No credits needed - completely free!**
+**ChainMe** is a vibrant, interactive crypto name generator website that transforms your name into iconic cryptocurrency symbols. Watch as 26 crypto symbols burst from the center and float endlessly in the background, then enter your name to reveal each letter as its corresponding crypto coin card.
 
-## ✨ Premium Features
+## Features
 
-### 🧠 AI-Powered News Curation (FREE - No Credits!)
-- **Groq AI Integration**: Articles sent to Groq for intelligent analysis (100% free!)
-- **High-Impact Stories Only**: AI selects only market-moving stories
-- **Summaries + Analysis**: Each story includes summary + "why it matters"
-- **CAT Preparation Digest**: AI curates current affairs for CAT exam prep
-- **Forever Free**: No credits, no payment, no limits
+✨ **Opening Animation** — All 26 crypto symbols burst from the center with a mesmerizing spiral explosion, then settle into floating positions and drift continuously across the background
 
-### 📰 Smart News Processing
-- **Auto-Deduplication**: Removes duplicate articles across all feeds
-- **24-Hour Filtering**: Only recent, relevant articles included
-- **10+ Premium Sources**: Reuters, TechCrunch, Financial Times, BBC, Livemint, etc.
-- **Fallback to Mock Data**: Testing works even when feeds unavailable
+🎴 **Flip Card Reveal** — Type your name and watch as black tiles flip one by one, revealing the crypto symbols for each letter with smooth 3D animations and satisfying tick sound effects
 
-### 📊 Market & Crypto Tracking
-- **Real-Time Crypto**: BTC, ETH, SOL, BNB, XRP prices (USD + INR) with 24h change
-- **Stock Indices**: Nifty 50, Sensex, S&P 500, NASDAQ, Gold, USD/INR
-- **Fear & Greed Index**: Market sentiment with emoji classification
-- **Structured Format**: Clean, easy-to-read Telegram messages
+📥 **Downloadable Images** — Generate a high-quality PNG image of your name chain with ChainMe branding, perfect for sharing on social media
 
-### ⏰ Automated Digests
-- **8 AM IST**: Crypto + Markets + Claude-curated top news
-- **1 PM IST**: Midday markets update
-- **7 PM IST**: Evening wrap-up with news and sentiment
+🐦 **Social Sharing** — One-click share to X (Twitter) with pre-filled message and crypto hashtags, or copy your name chain to clipboard
 
-### 🎯 10 Commands
-- `/news` - Claude-curated global business news
-- `/crypto` - Live crypto prices
-- `/market` or `/stocks` - Stock indices
-- `/india` - India-focused news (if NewsData key configured)
-- `/cat` - CAT GK digest (AI-curated for exam prep)
-- `/morning`, `/evening` - Trigger digests manually
-- `/help` - Command reference
+📖 **Alphabet Reference** — Explore all 26 crypto mappings in an elegant collapsible legend panel
 
-## 🚀 Quick Start
+🎉 **Confetti Burst** — Colorful confetti animation celebrates when your name is fully revealed
 
-### 1. Prerequisites
-- Python 3.11+
-- Telegram account & BotFather setup
-- **Groq API key** (for free AI news curation) - get free at https://console.groq.com (no payment needed!)
-- (Optional) NewsData.io API key for India news
+📱 **Mobile Responsive** — Fully optimized for all screen sizes, from desktop to mobile
 
-### 2. Get Bot Token & Chat ID
+## How to Use
 
-**Get Bot Token:**
-1. Open Telegram, search for `@BotFather`
-2. Send `/newbot`, follow prompts
-3. Copy the token (looks like: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
+1. **Open** — Simply open `index.html` in any modern web browser (no server required)
+2. **Enter** — Type your name in the input field (letters A-Z only)
+3. **Generate** — Click the "Generate ⚡" button or press Enter to reveal your crypto chain
+4. **Download** — Once revealed, download your name as a branded PNG image
+5. **Share** — Share your chain on X or copy it to clipboard
+6. **Regenerate** — Click "New Name" to try another combination
 
-**Get Chat ID:**
-1. Add your bot to a private chat
-2. Send any message to the bot
-3. Visit: `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
-4. Look for `"chat":{"id":<CHAT_ID>}`
+## Tech Stack
 
-**Get Groq API Key (for FREE AI News Curation):**
-1. Go to https://console.groq.com
-2. Sign up for free (no payment required ever!)
-3. Create an API key in the API Keys section
-4. Copy the key (format: `gsk_...`)
-5. No credits needed - completely unlimited for reasonable usage!
+- **HTML5** — Semantic markup
+- **CSS3** — Animations, glassmorphism, 3D transforms, gradients
+- **Vanilla JavaScript** — No frameworks or build tools
+- **Canvas API** — Image generation and download
+- **Web Audio API** — Procedurally generated tick sound effects
+- **CSS Transforms & Keyframes** — Burst animation, flip effects, floating drift
+- **Google Fonts** — Orbitron (headings) and Space Grotesk (body)
 
-### 3. Clone & Setup
+## Browser Support
 
-```bash
-# Clone repository
-git clone https://github.com/yourusername/news-bot.git
-cd news-bot
+Works in all modern browsers:
+- Chrome/Edge 88+
+- Firefox 87+
+- Safari 14+
+- Mobile browsers (iOS Safari, Chrome Mobile)
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file
-cat > .env << EOF
-BOT_TOKEN=your_bot_token_here
-CHAT_ID=your_chat_id_here
-GROQ_API_KEY=your_groq_api_key_here
-NEWSDATA_KEY=your_newsdata_key_here (optional)
-EOF
-
-# Run locally
-python bot.py
-```
-
-### 4. Test Commands
-
-Send these to your bot in Telegram:
-- `/start` - Welcome message
-- `/help` - Command list
-- `/crypto` - Get crypto prices now
-- `/market` - Get stock update now
-- `/news` - Get top news now
-- `/morning` - Trigger morning digest
-- `/evening` - Trigger evening digest
-
-## 🌍 Deployment
-
-### Option 1: Railway.app (Recommended)
-
-**Advantages**: Free tier, easy setup, auto-restarts
-
-**Steps:**
-1. Push code to GitHub:
-```bash
-git add .
-git commit -m "Initial commit: telegram news bot"
-git push origin claude/telegram-market-digest-bot-AmiFP
-```
-
-2. Go to https://railway.app
-3. Click "New Project" → "Deploy from GitHub"
-4. Select your repository
-5. Railway auto-detects Python
-6. Go to Variables tab, add:
-   - `BOT_TOKEN` = your_token
-   - `CHAT_ID` = your_chat_id
-   - `GROQ_API_KEY` = your_groq_key (free AI curation - get at https://console.groq.com)
-   - `NEWSDATA_KEY` = your_newsdata_key (optional)
-7. Click Deploy
-8. Bot runs 24/7 automatically
-
-**Check Logs:**
-```
-Deployments tab → View logs
-```
-
-### Option 2: Render.com
-
-**Advantages**: Free tier, simple, auto-deploy on push
-
-**Steps:**
-1. Push to GitHub (same as above)
-2. Go to https://render.com
-3. Click "New +" → "Web Service"
-4. Connect GitHub account, select repository
-5. Fill form:
-   - **Name**: `telegram-news-bot`
-   - **Runtime**: `Python 3.11`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `python bot.py`
-6. Add Environment Variables:
-   - `BOT_TOKEN` (from BotFather)
-   - `CHAT_ID` (your chat ID)
-   - `GROQ_API_KEY` (from https://console.groq.com - free, no payment needed!)
-   - `NEWSDATA_KEY` (optional, for India-specific news)
-7. Click "Create Web Service"
-8. Bot deploys and runs
-
-**Keep Service Active:**
-Go to Settings → Instance Type → Select "Standard" (prevents sleep after 15 min inactivity)
-
-### Option 3: VPS (Advanced)
-
-```bash
-# SSH into your VPS
-ssh user@your_vps_ip
-
-# Setup
-cd /home/user/
-git clone https://github.com/yourusername/news-bot.git
-cd news-bot
-
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Create systemd service
-sudo nano /etc/systemd/system/telegram-bot.service
-```
-
-Paste this:
-```ini
-[Unit]
-Description=Telegram News Bot
-After=network.target
-
-[Service]
-Type=simple
-User=your_user
-WorkingDirectory=/home/your_user/news-bot
-Environment="BOT_TOKEN=your_token"
-Environment="CHAT_ID=your_chat_id"
-ExecStart=/home/your_user/news-bot/venv/bin/python bot.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-# Start service
-sudo systemctl daemon-reload
-sudo systemctl enable telegram-bot
-sudo systemctl start telegram-bot
-
-# Check status
-sudo systemctl status telegram-bot
-sudo journalctl -u telegram-bot -f  # View logs
-```
-
-## 📋 API Reference
-
-### Data Sources
-
-| Source | Data | Free? | Notes |
-|--------|------|-------|-------|
-| **Groq AI** | **News Curation** | ✅ | 100% FREE - no credits, no payment ever needed! |
-| CoinGecko | Crypto | ✅ | BTC, ETH, SOL, BNB, XRP with 24h change |
-| Yahoo Finance (yfinance) | Stocks | ✅ | Nifty, Sensex, S&P, NASDAQ, Gold, USD/INR |
-| Alternative.me | F&G Index | ✅ | Market sentiment (0-100) |
-| RSS Feeds | News | ✅ | 10+ premium sources, auto-deduplicated |
-| NewsData.io | India News | ⚠️ | Optional, 200 requests/day free tier |
-
-### Command Reference
+## File Structure
 
 ```
-/start          → Bot welcome message
-/help           → Show all commands
-/news           → Top news from all sources
-/market         → Stock indices update
-/crypto         → Crypto prices (BTC, ETH, SOL, BNB, XRP)
-/stocks         → Detailed market indices
-/india          → India breaking news (requires NEWSDATA_KEY)
-/cat            → CAT GK preparation digest
-/morning        → Trigger morning digest immediately
-/evening        → Trigger evening digest immediately
+index.html   ← Complete single-page app (HTML + CSS + JavaScript)
+README.md    ← This file
 ```
 
-### Scheduled Jobs
+## Crypto Alphabet Mapping
 
-| Time | IST | Content |
-|------|-----|---------|
-| 08:00 | Morning | Crypto + Markets + News |
-| 13:00 | Midday | Stock update + Crypto |
-| 19:00 | Evening | Markets close + News + F&G |
+Each letter corresponds to an iconic cryptocurrency:
 
-## 🔧 Troubleshooting
+| Letter | Ticker | Name | Color |
+|--------|--------|------|-------|
+| A | ADA | Cardano | #0033AD |
+| B | BTC | Bitcoin | #F7931A |
+| C | CRO | Cronos | #002D74 |
+| D | DOGE | Dogecoin | #C2A633 |
+| E | ETH | Ethereum | #627EEA |
+| F | FIL | Filecoin | #0090FF |
+| G | GRT | The Graph | #6F4CBA |
+| H | HBAR | Hedera | #00B388 |
+| I | ICP | Internet Computer | #29ABE2 |
+| J | JUP | Jupiter | #C4884C |
+| K | KAS | Kaspa | #49EACB |
+| L | LTC | Litecoin | #BFBBBB |
+| M | MKR | MakerDAO | #1AAB9B |
+| N | NEO | NEO | #58BF00 |
+| O | OP | Optimism | #FF0420 |
+| P | POL | Polygon | #8247E5 |
+| Q | QTUM | Qtum | #2895D8 |
+| R | RENDER | Render Network | #FF4500 |
+| S | SOL | Solana | #9945FF |
+| T | TRX | TRON | #FF0013 |
+| U | UNI | Uniswap | #FF007A |
+| V | VET | VeChain | #15BDFF |
+| W | WLD | Worldcoin | #888888 |
+| X | XRP | Ripple | #00AAE4 |
+| Y | YFI | Yearn Finance | #006AE3 |
+| Z | ZEC | Zcash | #F4B728 |
 
-### Bot doesn't respond
-```
-1. Check BOT_TOKEN is correct (BotFather)
-2. Check CHAT_ID is correct (api.telegram.org/bot<TOKEN>/getUpdates)
-3. Check internet connection
-4. View logs: python bot.py (should show ✅ Scheduler started)
-```
+## Design System
 
-### RSS feeds return no articles
-- Feeds tested valid ✅ on 2024-04-08
-- Some feeds may be region-locked or rate-limited
-- Bot auto-skips broken feeds, tries next one
+- **Primary Background** — #0a0a0f (near black)
+- **Primary Accent** — #F7931A (Bitcoin orange)
+- **Secondary Accent** — #627EEA (Ethereum purple-blue)
+- **Glassmorphism** — Frosted glass with backdrop blur and subtle border glow
+- **Typography** — Orbitron for headings/tickers (geometric, crypto-style), Space Grotesk for body
+- **Animation** — CSS keyframes with easing, Web Animations API, 3D CSS transforms
 
-### API timeouts
-- CoinGecko & yfinance occasionally slow
-- Bot retries with 10-second timeout
-- If all fail, sends error message instead of crashing
+## Key Animations
 
-### Deployment issues on Railway/Render
-```
-Check:
-1. Logs tab (any Python errors?)
-2. Environment variables (typo check?)
-3. Free tier limits (CPU/RAM sufficient)
-4. Restart deployment if stuck
-```
+🌪️ **Burst Animation** (1s) — Symbols explode outward from center with ease-out timing
+⛅ **Float Animation** (infinite) — Gentle continuous drift with subtle rotation
+🎴 **Flip Animation** (500ms) — 3D card rotation with staggered timing per letter
+✨ **Glow Pulse** (800ms) — Soft glow cascades across cards after reveal
+🎆 **Confetti** (2.5s) — Colorful particles fall with rotation
 
-## 📝 File Structure
+## Customization
 
-```
-news-bot/
-├── bot.py              # Main bot code (500+ lines)
-├── requirements.txt    # Python dependencies
-├── README.md          # This file
-└── .env               # Local config (don't commit)
-```
+Want to modify ChainMe? It's all in one file:
 
-## 🔐 Security
+- **Change colors** — Edit the `cryptoAlphabet` object for different coin colors or replace the gradient
+- **Adjust animation speeds** — Modify CSS `@keyframes` durations and JS animation delays
+- **Customize fonts** — Replace Orbitron/Space Grotesk in Google Fonts link and CSS
+- **Add more symbols** — Extend `cryptoAlphabet` with additional letters or cryptocurrencies
+- **Modify canvas image** — Edit `generateCanvasImage()` for different download layout
 
-- **Never commit `.env`** to GitHub
-- **Never share BOT_TOKEN** or CHAT_ID
-- Bot only sends to configured CHAT_ID
-- All API calls use HTTPS
-- Error handling prevents token leaks in logs
+## Performance
 
-## 📦 Dependencies
+- **No external dependencies** (except Google Fonts)
+- **Lightweight** — Single HTML file, ~45KB uncompressed
+- **Smooth animations** — GPU-accelerated CSS transforms and 3D effects
+- **Responsive canvas** — Auto-scales based on name length
+- **Web Audio** — Efficient procedural sound generation (no audio files)
 
-```
-python-telegram-bot==21.5   # Telegram API wrapper
-feedparser==6.0.11          # RSS feed parser
-requests==2.31.0            # HTTP requests
-yfinance==0.2.40            # Yahoo Finance API
-APScheduler==3.10.4         # Scheduled jobs (8 AM, 1 PM, 7 PM IST)
-python-dotenv==1.0.0        # Environment variables
-groq==0.4.2                 # Groq AI (FREE news curation - no credits needed!)
-```
+## Future Ideas
 
-## 🐛 Known Issues
+- Dark/light theme toggle
+- More cryptocurrency options
+- Custom symbol mapping
+- Animated GIF export
+- Real-time preview
+- Name statistics and crypto correlation
+- Export as SVG
 
-- Some Indian RSS feeds (PIB, Hindu) occasionally slow
-- yfinance requires live market hours for realtime data
-- NewsData.io free tier has 200 requests/day limit
-- Telegram message size limit 4096 chars (bot truncates gracefully)
+## Screenshots
 
-## 🚀 Future Enhancements
-
-- [ ] User preferences (which feeds, which times)
-- [ ] Database for user tracking
-- [ ] Detailed crypto technical analysis
-- [ ] Options pricing
-- [ ] Portfolio tracking
-- [ ] Web dashboard
-
-## 📞 Support
-
-Issues? Check:
-1. Logs (`tail -f` deployment logs)
-2. Environment variables (correct spelling)
-3. Internet connection (can APIs be reached?)
-4. GitHub Issues in repository
-
-## 📄 License
-
-MIT - Use freely, modify as needed
+*(Add screenshots of your generated chains here after deploying)*
 
 ---
 
-**Status**: ✅ Production ready | **Last Updated**: April 8, 2024 | **Tested**: Python 3.11
+Built with ❤️ for the crypto community
+
+**ChainMe** — Because your name deserves to be on the blockchain ⛓️⚡

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChainMe — Crypto Name Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0a0f;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            position: relative;
+        }
+
+        /* Background container for floating symbols */
+        #floatingSymbolsContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-symbol {
+            position: absolute;
+            font-size: 70px;
+            opacity: 0.15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 0 10px rgba(247, 147, 26, 0.1));
+        }
+
+        /* Burst animation - symbols explode from center */
+        @keyframes burst {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 0.15;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1);
+                opacity: 0.15;
+            }
+        }
+
+        /* Floating animation - continuous gentle drift */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-15px) rotate(2deg);
+            }
+            50% {
+                transform: translateY(-8px) rotate(-1deg);
+            }
+            75% {
+                transform: translateY(-12px) rotate(1deg);
+            }
+        }
+
+        .floating-symbol.burst {
+            animation: burst 1s ease-out forwards;
+        }
+
+        .floating-symbol.floating {
+            animation: float linear infinite;
+        }
+
+        /* Animated grid background */
+        #gridBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(0deg, rgba(247, 147, 26, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247, 147, 26, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* Main content - center panel */
+        #mainContainer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 90%;
+            max-width: 600px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-in-out 1.2s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Glassmorphism panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        }
+
+        .glass-panel h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #F7931A, #627EEA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-panel .tagline {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .glass-panel .subtext {
+            font-size: 0.95rem;
+            color: #aaa;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        #nameInput {
+            flex: 1;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #nameInput::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #nameInput:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(247, 147, 26, 0.5);
+            box-shadow: 0 0 15px rgba(247, 147, 26, 0.2);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        #generateBtn {
+            background: linear-gradient(135deg, #F7931A, #FFA500);
+            color: #000;
+            padding: 14px 28px;
+        }
+
+        #generateBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(247, 147, 26, 0.4);
+        }
+
+        #generateBtn:active {
+            transform: translateY(0);
+        }
+
+        /* Cards container */
+        #cardsContainer {
+            display: none;
+            gap: 12px;
+            margin: 40px 0 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #cardsContainer.show {
+            display: flex;
+        }
+
+        /* Flip card 3D */
+        .card-wrapper {
+            perspective: 1000px;
+            width: auto;
+            height: 160px;
+            min-width: 60px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-style: preserve-3d;
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .card-front {
+            background: #1a1a22;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.2rem;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shimmer animation on black blocks */
+        @keyframes shimmer {
+            0% {
+                background: linear-gradient(90deg, #1a1a22, #1a1a22, #1a1a22);
+            }
+            50% {
+                background: linear-gradient(90deg, #1a1a22, rgba(247, 147, 26, 0.1), #1a1a22);
+            }
+            100% {
+                background: linear-gradient(90deg, #1a1a22, #1a1a22, #1a1a22);
+            }
+        }
+
+        .card-front.shimmer {
+            animation: shimmer 0.8s ease-in-out infinite;
+        }
+
+        .card-back {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--coin-color, #627EEA);
+            transform: rotateY(180deg);
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+        }
+
+        .card-back-symbol {
+            font-size: 48px;
+            line-height: 1;
+        }
+
+        .card-back-ticker {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--coin-color, #627EEA);
+            letter-spacing: 1px;
+        }
+
+        .card-back-letter {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .card-back-name {
+            font-size: 0.6rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Hover effect on cards */
+        .card-wrapper:hover {
+            transform: translateY(-8px);
+        }
+
+        .card-wrapper:hover .card-back {
+            border-color: var(--coin-color, #627EEA);
+            box-shadow: 0 0 20px var(--coin-color, #627EEA);
+        }
+
+        /* Glow pulse after all cards flip */
+        @keyframes glowPulse {
+            0% {
+                box-shadow: inset 0 0 0px rgba(247, 147, 26, 0);
+            }
+            50% {
+                box-shadow: inset 0 0 15px rgba(247, 147, 26, 0.3);
+            }
+            100% {
+                box-shadow: inset 0 0 0px rgba(247, 147, 26, 0);
+            }
+        }
+
+        #cardsContainer.glowing .card {
+            animation: glowPulse 0.8s ease-out forwards;
+        }
+
+        /* Download button */
+        #downloadBtn {
+            background: linear-gradient(135deg, #627EEA, #8b6cff);
+            color: #fff;
+            opacity: 0;
+            transition: all 0.5s ease;
+            margin-top: 20px;
+        }
+
+        #downloadBtn.show {
+            opacity: 1;
+            display: inline-block;
+        }
+
+        #downloadBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(98, 126, 234, 0.4);
+        }
+
+        /* Actions container */
+        #actionsContainer {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-radius: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(247, 147, 26, 0.5);
+        }
+
+        /* Legend - Alphabet Reference */
+        .legend-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9;
+        }
+
+        .legend-toggle {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .legend-toggle:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        #legendPanel {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 9;
+            max-width: 300px;
+        }
+
+        #legendPanel.show {
+            display: block;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .legend-item {
+            font-size: 0.75rem;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border-left: 3px solid var(--coin-color, #627EEA);
+        }
+
+        .legend-item strong {
+            color: var(--coin-color, #627EEA);
+        }
+
+        /* Confetti animation */
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 20;
+            animation: confettiFall 2.5s ease-out forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #mainContainer {
+                width: 95%;
+                max-width: 500px;
+            }
+
+            .glass-panel {
+                padding: 30px 20px;
+            }
+
+            .glass-panel h1 {
+                font-size: 2.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            #cardsContainer {
+                gap: 8px;
+            }
+
+            .card-wrapper {
+                height: 140px;
+            }
+
+            .card-back-symbol {
+                font-size: 40px;
+            }
+
+            .card-back-letter {
+                font-size: 1.5rem;
+            }
+
+            #legendPanel {
+                max-width: 250px;
+                bottom: 50px;
+                right: 10px;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-panel h1 {
+                font-size: 2rem;
+            }
+
+            .glass-panel {
+                padding: 25px 15px;
+            }
+
+            .input-group {
+                gap: 8px;
+            }
+
+            #generateBtn {
+                padding: 12px 20px;
+                font-size: 0.85rem;
+            }
+
+            .card-wrapper {
+                height: 120px;
+                min-width: 50px;
+            }
+
+            .card-back-symbol {
+                font-size: 32px;
+            }
+
+            .card-back-letter {
+                font-size: 1.2rem;
+            }
+
+            .card-back-ticker {
+                font-size: 0.65rem;
+            }
+
+            #actionsContainer {
+                gap: 8px;
+            }
+
+            .action-btn {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid background -->
+    <div id="gridBackground"></div>
+
+    <!-- Floating symbols container -->
+    <div id="floatingSymbolsContainer"></div>
+
+    <!-- Main content panel -->
+    <div id="mainContainer">
+        <div class="glass-panel">
+            <h1>ChainMe</h1>
+            <div class="tagline">⚡ Chain My Name</div>
+            <p class="subtext">Type your name — each letter becomes an iconic crypto symbol</p>
+
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="nameInput"
+                    placeholder="Enter your name..."
+                    maxlength="26"
+                />
+                <button id="generateBtn" class="btn">Generate ⚡</button>
+            </div>
+
+            <!-- Generated cards -->
+            <div id="cardsContainer"></div>
+
+            <!-- Download button -->
+            <button id="downloadBtn" class="btn">📥 Download Your Chain</button>
+
+            <!-- Actions (share, copy, regenerate) -->
+            <div id="actionsContainer" style="display: none;">
+                <button class="action-btn" id="shareBtn">🐦 Share on X</button>
+                <button class="action-btn" id="copyBtn">📋 Copy Link</button>
+                <button class="action-btn" id="regenerateBtn">🔄 New Name</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend button -->
+    <div class="legend-container">
+        <button class="legend-toggle" id="legendToggle">📖 Alphabet</button>
+        <div id="legendPanel">
+            <div class="legend-grid" id="legendGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CRYPTO ALPHABET MAPPING
+        // ============================================
+        const cryptoAlphabet = {
+            'A': { ticker: 'ADA', name: 'Cardano', symbol: '🔷', color: '#0033AD' },
+            'B': { ticker: 'BTC', name: 'Bitcoin', symbol: '₿', color: '#F7931A' },
+            'C': { ticker: 'CRO', name: 'Cronos', symbol: '🔵', color: '#002D74' },
+            'D': { ticker: 'DOGE', name: 'Dogecoin', symbol: 'Ð', color: '#C2A633' },
+            'E': { ticker: 'ETH', name: 'Ethereum', symbol: 'Ξ', color: '#627EEA' },
+            'F': { ticker: 'FIL', name: 'Filecoin', symbol: '⨎', color: '#0090FF' },
+            'G': { ticker: 'GRT', name: 'The Graph', symbol: '📊', color: '#6F4CBA' },
+            'H': { ticker: 'HBAR', name: 'Hedera', symbol: 'ℏ', color: '#00B388' },
+            'I': { ticker: 'ICP', name: 'Internet Computer', symbol: '∞', color: '#29ABE2' },
+            'J': { ticker: 'JUP', name: 'Jupiter', symbol: '🪐', color: '#C4884C' },
+            'K': { ticker: 'KAS', name: 'Kaspa', symbol: '⬡', color: '#49EACB' },
+            'L': { ticker: 'LTC', name: 'Litecoin', symbol: 'Ł', color: '#BFBBBB' },
+            'M': { ticker: 'MKR', name: 'MakerDAO', symbol: '◈', color: '#1AAB9B' },
+            'N': { ticker: 'NEO', name: 'NEO', symbol: '🌿', color: '#58BF00' },
+            'O': { ticker: 'OP', name: 'Optimism', symbol: '🔴', color: '#FF0420' },
+            'P': { ticker: 'POL', name: 'Polygon', symbol: '⬟', color: '#8247E5' },
+            'Q': { ticker: 'QTUM', name: 'Qtum', symbol: '◉', color: '#2895D8' },
+            'R': { ticker: 'RENDER', name: 'Render Network', symbol: '🎨', color: '#FF4500' },
+            'S': { ticker: 'SOL', name: 'Solana', symbol: '◎', color: '#9945FF' },
+            'T': { ticker: 'TRX', name: 'TRON', symbol: '♦', color: '#FF0013' },
+            'U': { ticker: 'UNI', name: 'Uniswap', symbol: '🦄', color: '#FF007A' },
+            'V': { ticker: 'VET', name: 'VeChain', symbol: '✦', color: '#15BDFF' },
+            'W': { ticker: 'WLD', name: 'Worldcoin', symbol: '🌍', color: '#888888' },
+            'X': { ticker: 'XRP', name: 'Ripple', symbol: '✕', color: '#00AAE4' },
+            'Y': { ticker: 'YFI', name: 'Yearn Finance', symbol: '💙', color: '#006AE3' },
+            'Z': { ticker: 'ZEC', name: 'Zcash', symbol: 'ⓩ', color: '#F4B728' }
+        };
+
+        // ============================================
+        // OPENING ANIMATION - BURST & FLOAT
+        // ============================================
+        function initializeFloatingSymbols() {
+            const container = document.getElementById('floatingSymbolsContainer');
+            const symbols = Object.values(cryptoAlphabet).map(c => c.symbol);
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            symbols.forEach((symbol, index) => {
+                const el = document.createElement('div');
+                el.className = 'floating-symbol';
+                el.textContent = symbol;
+
+                // Random angle and distance for burst
+                const angle = (index / symbols.length) * Math.PI * 2;
+                const distance = 300 + Math.random() * 200;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                el.style.setProperty('--tx', `${tx}px`);
+                el.style.setProperty('--ty', `${ty}px`);
+
+                // Random position after burst
+                const finalX = Math.random() * (window.innerWidth - 100);
+                const finalY = Math.random() * (window.innerHeight - 100);
+
+                container.appendChild(el);
+
+                // Burst animation
+                setTimeout(() => {
+                    el.classList.add('burst');
+                    el.style.left = finalX + 'px';
+                    el.style.top = finalY + 'px';
+
+                    // Start floating after burst completes
+                    setTimeout(() => {
+                        el.classList.add('floating');
+                        el.style.animationDuration = (3 + Math.random() * 2) + 's';
+                        el.style.animationDelay = Math.random() * 2 + 's';
+                    }, 1000);
+                }, 50);
+            });
+        }
+
+        // ============================================
+        // LEGEND INITIALIZATION
+        // ============================================
+        function initializeLegend() {
+            const grid = document.getElementById('legendGrid');
+            for (const [letter, data] of Object.entries(cryptoAlphabet)) {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.style.setProperty('--coin-color', data.color);
+                item.innerHTML = `<strong>${letter}</strong> = ${data.ticker}`;
+                grid.appendChild(item);
+            }
+        }
+
+        // ============================================
+        // NAME GENERATION & CARD REVEAL
+        // ============================================
+        function generateName() {
+            const input = document.getElementById('nameInput').value.trim().toUpperCase();
+            if (!input) {
+                alert('Please enter a name');
+                return;
+            }
+
+            // Validate - only allow A-Z
+            if (!/^[A-Z]+$/.test(input)) {
+                alert('Only letters A-Z allowed');
+                return;
+            }
+
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            container.classList.remove('glowing');
+            container.classList.add('show');
+
+            // PHASE 1 - Show black blocks
+            const cards = [];
+            input.split('').forEach((letter, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const front = document.createElement('div');
+                front.className = 'card-face card-front shimmer';
+                front.textContent = '?';
+
+                const back = document.createElement('div');
+                back.className = 'card-face card-back';
+                const coinData = cryptoAlphabet[letter];
+                back.style.setProperty('--coin-color', coinData.color);
+
+                back.innerHTML = `
+                    <div class="card-back-symbol">${coinData.symbol}</div>
+                    <div class="card-back-ticker">${coinData.ticker}</div>
+                    <div class="card-back-letter">${letter}</div>
+                    <div class="card-back-name">${coinData.name}</div>
+                `;
+
+                card.appendChild(front);
+                card.appendChild(back);
+                wrapper.appendChild(card);
+                container.appendChild(wrapper);
+                cards.push(card);
+            });
+
+            // PHASE 2 - Flip cards with stagger
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    playTickSound();
+                    card.classList.add('flip');
+                }, index * 150);
+            });
+
+            // PHASE 3 - Show glow & download button after all flips
+            setTimeout(() => {
+                container.classList.add('glowing');
+                showDownloadButton(input);
+                showActionsContainer();
+                triggerConfetti();
+            }, cards.length * 150 + 500);
+        }
+
+        // ============================================
+        // WEB AUDIO API - TICK SOUND
+        // ============================================
+        let audioContext = null;
+        function playTickSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }
+
+        // ============================================
+        // CANVAS IMAGE GENERATION
+        // ============================================
+        function generateCanvasImage(name) {
+            const letterCount = name.length;
+            const cardWidth = 100;
+            const cardHeight = 120;
+            const padding = 20;
+            const topMargin = 80;
+
+            const canvasWidth = Math.max(1200, letterCount * (cardWidth + 10) + padding * 2);
+            const canvasHeight = 500;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Background with gradient
+            const gradient = ctx.createRadialGradient(canvasWidth / 2, canvasHeight / 2, 0, canvasWidth / 2, canvasHeight / 2, canvasWidth);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#0a0a0f');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(247, 147, 26, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvasWidth; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvasHeight);
+                ctx.stroke();
+            }
+
+            // Top-left ChainMe watermark
+            ctx.font = 'bold 16px Orbitron';
+            ctx.fillStyle = 'rgba(247, 147, 26, 0.6)';
+            ctx.fillText('⛓️ ChainMe', 15, 30);
+
+            // Draw letter cards
+            const startX = (canvasWidth - (letterCount * (cardWidth + 10) - 10)) / 2;
+            name.split('').forEach((letter, index) => {
+                const x = startX + index * (cardWidth + 10);
+                const y = topMargin;
+
+                const coinData = cryptoAlphabet[letter];
+
+                // Card background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.strokeStyle = coinData.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(x, y, cardWidth, cardHeight, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Symbol
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(coinData.symbol, x + cardWidth / 2, y + 25);
+
+                // Ticker
+                ctx.font = 'bold 10px Orbitron';
+                ctx.fillStyle = coinData.color;
+                ctx.fillText(coinData.ticker, x + cardWidth / 2, y + 50);
+
+                // Letter
+                ctx.font = 'bold 20px Orbitron';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(letter, x + cardWidth / 2, y + 70);
+
+                // Project name
+                ctx.font = '8px Orbitron';
+                ctx.fillStyle = '#999';
+                ctx.fillText(coinData.name, x + cardWidth / 2, y + 105);
+            });
+
+            // Bottom watermark
+            ctx.font = '12px Orbitron';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.textAlign = 'right';
+            ctx.fillText('chainme.app', canvasWidth - 15, canvasHeight - 15);
+
+            return canvas;
+        }
+
+        // ============================================
+        // DOWNLOAD FUNCTIONALITY
+        // ============================================
+        function showDownloadButton(name) {
+            const btn = document.getElementById('downloadBtn');
+            btn.classList.add('show');
+            btn.onclick = () => {
+                const canvas = generateCanvasImage(name);
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `chainme-${name}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+        }
+
+        // ============================================
+        // ACTIONS CONTAINER
+        // ============================================
+        function showActionsContainer() {
+            const container = document.getElementById('actionsContainer');
+            container.style.display = 'flex';
+
+            const name = document.getElementById('nameInput').value.toUpperCase();
+
+            document.getElementById('shareBtn').onclick = () => {
+                const text = `I just created my crypto name chain: ${name} 🔗⚡ Try it yourself at ChainMe! #Bitcoin #Crypto #Web3 #ChainMe`;
+                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank', 'width=550,height=420');
+            };
+
+            document.getElementById('copyBtn').onclick = () => {
+                const url = `My ChainMe: ${name}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Copied to clipboard!');
+                });
+            };
+
+            document.getElementById('regenerateBtn').onclick = () => {
+                document.getElementById('nameInput').value = '';
+                document.getElementById('cardsContainer').innerHTML = '';
+                document.getElementById('cardsContainer').classList.remove('show', 'glowing');
+                document.getElementById('downloadBtn').classList.remove('show');
+                document.getElementById('actionsContainer').style.display = 'none';
+                document.getElementById('nameInput').focus();
+            };
+        }
+
+        // ============================================
+        // CONFETTI ANIMATION
+        // ============================================
+        function triggerConfetti() {
+            const colors = Object.values(cryptoAlphabet).map(c => c.color);
+            const confettiPieces = 50;
+
+            for (let i = 0; i < confettiPieces; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.opacity = Math.random() * 0.8 + 0.2;
+
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 2500);
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.getElementById('generateBtn').addEventListener('click', generateName);
+        document.getElementById('nameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateName();
+            }
+        });
+
+        document.getElementById('legendToggle').addEventListener('click', () => {
+            document.getElementById('legendPanel').classList.toggle('show');
+        });
+
+        // Close legend when clicking outside
+        document.addEventListener('click', (e) => {
+            const legend = document.getElementById('legendPanel');
+            const toggle = document.getElementById('legendToggle');
+            if (!legend.contains(e.target) && !toggle.contains(e.target)) {
+                legend.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        window.addEventListener('load', () => {
+            initializeFloatingSymbols();
+            initializeLegend();
+            document.getElementById('nameInput').focus();
+        });
+
+        // Handle window resize for floating symbols
+        window.addEventListener('resize', () => {
+            // Symbols will stay where they are - no need to reposition
+        });
+    </script>
+</body>
+</html>
